@@ -1,27 +1,34 @@
-import express from  'express';
+import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
 import route from './Routes/UserRoutes.js';
 
-import dotenv from 'dotenv';
-
-
-const  app = express();
-
-app.use(bodyParser.json());
+const app = express();
 dotenv.config();
 
-const PORT =  process.env.PORT || 5000;
+// Middleware
+app.use(bodyParser.json());
+
+// Environment variables
+const PORT = process.env.PORT || 5000;
 const MONGOURL = process.env.MONGO_URL;
 
-mongoose.connect(MONGOURL).then(() => {
-    console.log("Connected to MongoDB");
-    app.listen(PORT,  () => {
-        console.log(`server running on port ${PORT}`);
+// Connect to MongoDB and start the server
+mongoose.connect(MONGOURL)
+    .then(() => {
+        console.log("Connected to MongoDB");
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
     })
-}).catch((error)=> console.log(error));
+    .catch((error) => console.log('Error connecting to MongoDB:', error));
 
+// Routes
+app.use('/api/user', route);
 
-app.use('/api/user' , route)
-
-
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something went wrong!');
+});
